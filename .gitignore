@@ -1,3 +1,14 @@
+# Secret Telegram token
+token.txt
+
+# Various files
+floors/
+Pipfile.lock
+*.old.*
+save.*
+data/*.xcf
+data/*-walls.png
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
