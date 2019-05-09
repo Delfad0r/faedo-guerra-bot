@@ -29,6 +29,7 @@ def fast_loop_func(state, description):
 
 state0 = pickle.load(open(save_file, 'rb'))
 state = copy.deepcopy(state0)
+# Watch out: game_graphics uses random!
 '''if not 'next_iteration' in state:
     state['next_iteration'] = time.time()
 random_state = random.getstate()

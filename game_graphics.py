@@ -1,6 +1,7 @@
 import imageio
 import itertools
 import numpy as np
+import random
 import re
 from scipy import ndimage
 from skimage import transform, morphology, filters, draw
@@ -102,6 +103,45 @@ def draw_report_section(width, rooms, description):
     font =  ImageFont.truetype('Roboto-Bold.ttf', size = int(0.8 * one_meter))
     draw_enriched_text(rooms, imagedraw, (one_meter * 3, one_meter * 2), report.generate_report(rooms, description), font = font)
     return img
+
+def draw_leaderboard(height, rooms):
+    font = ImageFont.truetype('Roboto-Bold.ttf', size = int(0.8 * one_meter))
+    img = Image.new('RGBA', (0, 0))
+    imagedraw = ImageDraw.Draw(img)
+    width = 9 * one_meter+ imagedraw.textsize(' ha 999 stanze', font = font)[0] + max(imagedraw.textsize(r['name'], font = font)[0] for r in rooms.values() if 'neutral' not in r)
+    img = Image.new('RGBA', (width, height))
+    imagedraw = ImageDraw.Draw(img)
+    leaders = {r['owner'] : 0 for r in rooms.values()}
+    for r in rooms.values():
+        if r['owner']:
+            leaders[r['owner']] += 1
+    leaders = list(leaders.items())
+    random.shuffle(leaders)
+    leaders = sorted(leaders, key = lambda x: x[1], reverse = True)[0 : 10]
+    for i, (l, c) in zip(itertools.count(), leaders):
+        draw_enriched_text(rooms, imagedraw, (one_meter * 5, one_meter * (2 + 3 * i)), '[%d] ha %d stanz%s' % (l, c, 'a' if l == 1 else 'e'), font = font)
+    return img
+
+def draw_sns_vs_sssup(width, height, rooms):
+    font = ImageFont.truetype('Roboto-Bold.ttf', size = int(0.8 * one_meter))
+    img = Image.new('RGBa', (width, height))
+    imagedraw = ImageDraw.Draw(img)
+    rectangle_w = width - 10 * one_meter
+    rectangle_h = imagedraw.textsize('SNS', font = font)[1]
+    offset0 = 20
+    offset1 = 16
+    x = one_meter * 5 + offset0
+    y = one_meter * 2
+    imagedraw.rectangle([x - offset0, y - offset0, x + rectangle_w + offset0, y + rectangle_h + offset0], fill = 'black')
+    imagedraw.rectangle([x - offset1, y - offset1, x + rectangle_w + offset1, y + rectangle_h + offset1], fill = 'white')
+    sns_rooms = len([() for r in rooms.values() if r['owner'] and r['owner'] <= 167 and r['owner'] % 2 == 1])
+    sssup_rooms = len([() for r in rooms.values() if r['owner'] and r['owner'] <= 167 and r['owner'] % 2 == 0])
+    imagedraw.rectangle([x - offset1, y - offset1, x + int(rectangle_w * sns_rooms / len(rooms)), y + rectangle_h + offset1], fill = 'blue')
+    imagedraw.rectangle([x + int(rectangle_w * (1 - sssup_rooms / len(rooms))), y - offset1, x + rectangle_w + offset1, y + rectangle_h + offset1], fill = 'red')
+    imagedraw.text((x, y), 'SNS - %d%%' % round(100 * sns_rooms / len(rooms)), fill = 'white', font = font)
+    sssup_text = '%d%% - SSSUP' % round(100 * sssup_rooms / len(rooms))
+    imagedraw.text((x + rectangle_w - imagedraw.textsize(sssup_text, font = font)[0], y), sssup_text, fill = 'white', font = font)
+    return img
     
 def draw_full_image(state, description):
     rooms = state['rooms']
@@ -118,13 +158,19 @@ def draw_full_image(state, description):
     large_floor_img = draw_floor(large_floor, floors[large_floor], rooms, description, True)
     large_w, large_h = large_floor_img.size
     small_w, small_h = large_w // 2, large_h // 2
-    w = large_w + 2 * small_w
-    report = draw_report_section(w, rooms, description)
+    floors_w = large_w + 2 * small_w
+    leaderboard = draw_leaderboard(large_h, rooms)
+    leaderboard_w = leaderboard.size[0]
+    w = floors_w + leaderboard_w
+    report = draw_report_section(floors_w, rooms, description)
     report_h = report.size[1]
     h = large_h + report_h
+    sns_vs_sssup = draw_sns_vs_sssup(leaderboard_w, report_h, rooms)
     img = Image.new('RGBA', (w, h), (255, 255, 255, 255))
     img.paste(report, (0, 0))
     img.paste(large_floor_img, (0, report_h))
+    img.paste(leaderboard, (floors_w, report_h))
+    img.paste(sns_vs_sssup, (floors_w, 0))
     for i, f in zip(itertools.count(), small_floors):
         small_floor_img = draw_floor(f, floors[f], rooms, description, False)
         small_floor_img = small_floor_img.resize((small_w, small_h), Image.BICUBIC)
