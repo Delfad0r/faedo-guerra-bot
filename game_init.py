@@ -1,4 +1,5 @@
 import imageio
+import itertools
 import pickle
 import numpy as np 
 from scipy import ndimage, spatial
@@ -16,6 +17,11 @@ with open(floors_file, 'rb') as fin:
 
 with open(stairs_file, 'rb') as fin:
     stairs = pickle.load(fin)
+
+people = {}
+with open(people_file, 'r') as fin:
+    for i, p in zip(itertools.count(1), fin.read().splitlines()):
+        people[i] = p
 
 print(floors)
 
@@ -55,20 +61,35 @@ for i in np.linspace(0, 1, 14, endpoint = False):
                  (np.array(colorsys.hsv_to_rgb(j, 1, 1) + (1, )) * 255).astype('uint8'))
                 )
 '''
-colors = [
+'''colors = [
     ((np.array(colorsys.hsv_to_rgb(i / 15, 1, 0.8) + (1, )) * 255).astype('uint8'),
     (np.array(colorsys.hsv_to_rgb(j / 15, 1, 1) + (1, )) * 255).astype('uint8'))
     for i in range(15) for j in range(15) if 1 < (j - i) % 15 < 14
-    ]
+    ]'''
 
+colors = [
+    ((np.array(colorsys.hsv_to_rgb(i / 11, 1, 0.7) + (1, )) * 255).astype('uint8'),
+    (np.array(colorsys.hsv_to_rgb(j / 11, 1, 1) + (1, )) * 255).astype('uint8'),
+    k)
+    for i in range(11) for j in range(11) if 1 < (j - i) % 11 < 10
+    for k in [np.array((255, 255, 255, 255), dtype = 'uint8'), (np.array(colorsys.hsv_to_rgb(((i + 5.5) % 11) / 11, 1, 1) + (1, )) * 255).astype('uint8')]
+    ]
 random.shuffle(colors)
 
-for k, r in rooms.items():
+'''for k, r in rooms.items():
     if 'neutral' in r:
         r['owner'] = None
     else:
         r['owner'] = k
-        r['color'], r['boundary_color'] = colors.pop()
+        r['color'], r['boundary_color'] = colors.pop()'''
+for i, r in rooms.items():
+    if i in people and people[i]:
+        r['owner'] = i
+        r['color'], r['boundary_color'], r['text_color'] = colors.pop()
+        r['person'] = people[i]
+        print(i, people[i])
+    else:
+        r['owner'] = None
 
 state = {'rooms' : rooms, 'floors' : floors, 'iterations' : 0}
 

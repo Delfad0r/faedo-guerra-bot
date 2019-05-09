@@ -41,6 +41,17 @@ def send_photo(chat_id, photo, **kwargs):
     return dict(url = base_url + '/sendPhoto', data = data, files = files)
 
 @telegram_request
+def send_document(chat_id, document, **kwargs):
+    data = {
+        'chat_id'               : chat_id
+    }
+    data.update(**kwargs)
+    files = {
+        'document'              : document
+    }
+    return dict(url = base_url + '/sendDocument', data = data, files = files)
+
+@telegram_request
 def set_chat_description(chat_id, description, **kwargs):
     data = {
           'chat_id'             : chat_id

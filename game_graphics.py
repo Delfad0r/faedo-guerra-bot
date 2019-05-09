@@ -23,12 +23,12 @@ def draw_enriched_text(rooms, imagedraw, xy, text, **kwargs):
         if i % 2:
             x += offset0
             r = rooms[int(t)]
-            t = r['name']
+            t = r['person']
             w, h = imagedraw.textsize(t, font = kwargs['font'])
             imagedraw.rectangle([x - offset0, y - offset0, x + w + offset0, y + h + offset0], fill = 'black')
             imagedraw.rectangle([x - offset1, y - offset1, x + w + offset1, y + h + offset1], fill = tuple(r['boundary_color']))
             imagedraw.rectangle([x - offset2, y - offset2, x + w + offset2, y + h + offset2], fill = tuple(r['color']))
-            imagedraw.text((x, y), t, fill = 'white', **kwargs)
+            imagedraw.text((x, y), t, fill = tuple(r['text_color']), **kwargs)
             x += w + offset0
         else:
             imagedraw.text((x, y), t, fill = 'black', **kwargs)
@@ -91,14 +91,14 @@ def draw_floor(floor_id, floor, rooms, description, is_large):
             r = rooms[i]
             if description['room'] != i:
                 s = r['short_name'] if 'short_name' in r else r['name']
-                col = 'black' if r['owner'] is None else 'white'
+                col = 'black' if r['owner'] is None else tuple(rooms[r['owner']]['text_color'])
                 draw_centered_text(draw_pillow, (r['center'][1], r['center'][0]), s, fill = col, font = font_rooms)
     draw_pillow.text((1000, 2350), floor['name'], fill = 'black', font = font_floor)
     img_pillow = img_pillow.resize((img_pillow.size[0] // 2, img_pillow.size[1] // 2), Image.BICUBIC)
     return img_pillow
 
 def draw_report_section(width, rooms, description):
-    img = Image.new('RGBA', (width, one_meter * 4))
+    img = Image.new('RGBA', (width, one_meter * 4), 'white')
     imagedraw = ImageDraw.Draw(img)
     font =  ImageFont.truetype('Roboto-Bold.ttf', size = int(0.8 * one_meter))
     draw_enriched_text(rooms, imagedraw, (one_meter * 3, one_meter * 2), report.generate_report(rooms, description), font = font)
@@ -106,10 +106,10 @@ def draw_report_section(width, rooms, description):
 
 def draw_leaderboard(height, rooms):
     font = ImageFont.truetype('Roboto-Bold.ttf', size = int(0.8 * one_meter))
-    img = Image.new('RGBA', (0, 0))
+    img = Image.new('RGBA', (0, 0), 'white')
     imagedraw = ImageDraw.Draw(img)
-    width = 9 * one_meter+ imagedraw.textsize(' ha 999 stanze', font = font)[0] + max(imagedraw.textsize(r['name'], font = font)[0] for r in rooms.values() if 'neutral' not in r)
-    img = Image.new('RGBA', (width, height))
+    width = 9 * one_meter+ imagedraw.textsize(' ha 999 stanze', font = font)[0] + max(imagedraw.textsize(r['person'], font = font)[0] for r in rooms.values() if 'person' in r)
+    img = Image.new('RGBA', (width, height), 'white')
     imagedraw = ImageDraw.Draw(img)
     leaders = {r['owner'] : 0 for r in rooms.values()}
     for r in rooms.values():
@@ -119,12 +119,12 @@ def draw_leaderboard(height, rooms):
     random.shuffle(leaders)
     leaders = sorted(leaders, key = lambda x: x[1], reverse = True)[0 : 10]
     for i, (l, c) in zip(itertools.count(), leaders):
-        draw_enriched_text(rooms, imagedraw, (one_meter * 5, one_meter * (2 + 3 * i)), '[%d] ha %d stanz%s' % (l, c, 'a' if l == 1 else 'e'), font = font)
+        draw_enriched_text(rooms, imagedraw, (one_meter * 5, one_meter * (2 + 3 * i)), '[%d] ha %d stanz%s' % (l, c, 'a' if c == 1 else 'e'), font = font)
     return img
 
 def draw_sns_vs_sssup(width, height, rooms):
     font = ImageFont.truetype('Roboto-Bold.ttf', size = int(0.8 * one_meter))
-    img = Image.new('RGBa', (width, height))
+    img = Image.new('RGBa', (width, height), 'white')
     imagedraw = ImageDraw.Draw(img)
     rectangle_w = width - 10 * one_meter
     rectangle_h = imagedraw.textsize('SNS', font = font)[1]
@@ -166,7 +166,7 @@ def draw_full_image(state, description):
     report_h = report.size[1]
     h = large_h + report_h
     sns_vs_sssup = draw_sns_vs_sssup(leaderboard_w, report_h, rooms)
-    img = Image.new('RGBA', (w, h), (255, 255, 255, 255))
+    img = Image.new('RGBA', (w, h), 'white')
     img.paste(report, (0, 0))
     img.paste(large_floor_img, (0, report_h))
     img.paste(leaderboard, (floors_w, report_h))
@@ -175,5 +175,5 @@ def draw_full_image(state, description):
         small_floor_img = draw_floor(f, floors[f], rooms, description, False)
         small_floor_img = small_floor_img.resize((small_w, small_h), Image.BICUBIC)
         img.paste(small_floor_img, (large_w + (i % 2) * small_w, report_h + (i // 2) * small_h))
-    return img
+    return img.convert('RGB')
     
