@@ -56,7 +56,7 @@ for i in np.linspace(0, 1, 14, endpoint = False):
                 )
 '''
 colors = [
-    ((np.array(colorsys.hsv_to_rgb(i / 15, 0.9, 0.75) + (1, )) * 255).astype('uint8'),
+    ((np.array(colorsys.hsv_to_rgb(i / 15, 1, 0.8) + (1, )) * 255).astype('uint8'),
     (np.array(colorsys.hsv_to_rgb(j / 15, 1, 1) + (1, )) * 255).astype('uint8'))
     for i in range(15) for j in range(15) if 1 < (j - i) % 15 < 14
     ]

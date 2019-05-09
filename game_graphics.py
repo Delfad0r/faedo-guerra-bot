@@ -1,14 +1,37 @@
 import imageio
+import itertools
 import numpy as np
+import re
 from scipy import ndimage
 from skimage import transform, morphology, filters, draw
 from PIL import Image, ImageDraw, ImageFont
 
+import report
 from constants import *
 
 def draw_centered_text(imagedraw, xy, *args, **kwargs):
     w, h = imagedraw.textsize(args[0], font = kwargs['font'])
     imagedraw.text((xy[0] - w / 2, xy[1] - h / 2), *args, **kwargs)
+
+def draw_enriched_text(rooms, imagedraw, xy, text, **kwargs):
+    offset0 = 20
+    offset1 = 16
+    offset2 = 9
+    x, y = xy
+    for i, t in zip(itertools.count(), re.split('\[|\]', text)):
+        if i % 2:
+            x += offset0
+            r = rooms[int(t)]
+            t = r['name']
+            w, h = imagedraw.textsize(t, font = kwargs['font'])
+            imagedraw.rectangle([x - offset0, y - offset0, x + w + offset0, y + h + offset0], fill = 'black')
+            imagedraw.rectangle([x - offset1, y - offset1, x + w + offset1, y + h + offset1], fill = tuple(r['boundary_color']))
+            imagedraw.rectangle([x - offset2, y - offset2, x + w + offset2, y + h + offset2], fill = tuple(r['color']))
+            imagedraw.text((x, y), t, fill = 'white', **kwargs)
+            x += w + offset0
+        else:
+            imagedraw.text((x, y), t, fill = 'black', **kwargs)
+            x += imagedraw.textsize(t, font = kwargs['font'])[0]
 
 def draw_floor(floor_id, floor, rooms, description, is_large):
     # Rooms backgroud
@@ -24,7 +47,7 @@ def draw_floor(floor_id, floor, rooms, description, is_large):
         if r['owner']:
             palette[regions[r['inside_point']]] = rooms[r['owner']]['color']
             palette_boundary[regions[r['inside_point']]] = rooms[r['owner']]['boundary_color']
-    boundary_mask = filters.gaussian(morphology.binary_dilation(walls_img[:, :, 3] > 0, morphology.disk(one_meter * 0.4)), one_meter / 10)
+    boundary_mask = filters.gaussian(morphology.binary_dilation(walls_img[:, :, 3] > 0, morphology.disk(one_meter * 0.5)), one_meter / 10)
     if description['room'] in floor['rooms']:
         r = rooms[description['room']]
         room_region = regions == regions[r['inside_point']]
@@ -72,6 +95,13 @@ def draw_floor(floor_id, floor, rooms, description, is_large):
     draw_pillow.text((1000, 2350), floor['name'], fill = 'black', font = font_floor)
     img_pillow = img_pillow.resize((img_pillow.size[0] // 2, img_pillow.size[1] // 2), Image.BICUBIC)
     return img_pillow
+
+def draw_report_section(width, rooms, description):
+    img = Image.new('RGBA', (width, one_meter * 4))
+    imagedraw = ImageDraw.Draw(img)
+    font =  ImageFont.truetype('Roboto-Bold.ttf', size = int(0.8 * one_meter))
+    draw_enriched_text(rooms, imagedraw, (one_meter * 3, one_meter * 2), report.generate_report(rooms, description), font = font)
+    return img
     
 def draw_full_image(state, description):
     rooms = state['rooms']
@@ -87,15 +117,17 @@ def draw_full_image(state, description):
     small_floors = sorted((f for f in floors.keys() if f != large_floor), key = lambda f: floors[f]['altitude'])
     large_floor_img = draw_floor(large_floor, floors[large_floor], rooms, description, True)
     large_w, large_h = large_floor_img.size
-    stats_h = 0
     small_w, small_h = large_w // 2, large_h // 2
     w = large_w + 2 * small_w
-    h = stats_h + large_h
+    report = draw_report_section(w, rooms, description)
+    report_h = report.size[1]
+    h = large_h + report_h
     img = Image.new('RGBA', (w, h), (255, 255, 255, 255))
-    img.paste(large_floor_img, (0, stats_h))
-    for i, f in zip(range(4), small_floors):
+    img.paste(report, (0, 0))
+    img.paste(large_floor_img, (0, report_h))
+    for i, f in zip(itertools.count(), small_floors):
         small_floor_img = draw_floor(f, floors[f], rooms, description, False)
         small_floor_img = small_floor_img.resize((small_w, small_h), Image.BICUBIC)
-        img.paste(small_floor_img, (large_w + (i % 2) * small_w, stats_h + (i // 2) * small_h))
+        img.paste(small_floor_img, (large_w + (i % 2) * small_w, report_h + (i // 2) * small_h))
     return img
     

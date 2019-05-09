@@ -21,20 +21,30 @@ def telegram_request(func):
 
 @telegram_request
 def send_message(chat_id, text, **kwargs):
-    data =  { 'chat_id'     : chat_id
-            , 'text'        : text
-            , 'parse_mode'  : 'Markdown'
-            }
+    data =  {
+          'chat_id'             : chat_id
+        , 'text'                : text
+        , 'parse_mode'          : 'Markdown'
+    }
     data.update(**kwargs)
     return dict(url = base_url + '/sendMessage', json = data)
 
 @telegram_request
 def send_photo(chat_id, photo, **kwargs):
     data = {
-        'chat_id'				: chat_id
+        'chat_id'               : chat_id
     }
     data.update(**kwargs)
     files = {
-        'photo'					: photo
+        'photo'	                : photo
     }
     return dict(url = base_url + '/sendPhoto', data = data, files = files)
+
+@telegram_request
+def set_chat_description(chat_id, description, **kwargs):
+    data = {
+          'chat_id'             : chat_id
+        , 'description'         : description
+    }
+    data.update(**kwargs)
+    return dict(url = base_url + '/setChatDescription', json = data)
