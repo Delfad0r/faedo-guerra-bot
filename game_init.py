@@ -67,12 +67,14 @@ for i in np.linspace(0, 1, 14, endpoint = False):
     for i in range(15) for j in range(15) if 1 < (j - i) % 15 < 14
     ]'''
 
+hues = [i for i in [0, 25, 50, 80, 120, 160, 200, 230, 270, 310]]
 colors = [
-    ((np.array(colorsys.hsv_to_rgb(i / 11, 1, 0.7) + (1, )) * 255).astype('uint8'),
-    (np.array(colorsys.hsv_to_rgb(j / 11, 1, 1) + (1, )) * 255).astype('uint8'),
-    k)
-    for i in range(11) for j in range(11) if 1 < (j - i) % 11 < 10
-    for k in [np.array((255, 255, 255, 255), dtype = 'uint8'), (np.array(colorsys.hsv_to_rgb(((i + 5.5) % 11) / 11, 1, 1) + (1, )) * 255).astype('uint8')]
+    ((np.array(colorsys.hsv_to_rgb(i / 360, 1, 0.8) + (1, )) * 255).astype('uint8'),
+    (np.array(colorsys.hsv_to_rgb(j / 360, 1, 1) + (1, )) * 255).astype('uint8'),
+    k, l)
+    for i in hues for j in hues if i != j
+    #for k in [np.array((255, 255, 255, 255), dtype = 'uint8'), (np.array(colorsys.hsv_to_rgb(((i + 5.5) % 11) / 11, 1, 1) + (1, )) * 255).astype('uint8')]
+    for k, l in [('black', 'white'), ('white', 'black')]
     ]
 random.shuffle(colors)
 
@@ -85,7 +87,7 @@ random.shuffle(colors)
 for i, r in rooms.items():
     if i in people and people[i]:
         r['owner'] = i
-        r['color'], r['boundary_color'], r['text_color'] = colors.pop()
+        r['color'], r['boundary_color'], r['text_color'], r['shadow_color'] = colors.pop()
         r['person'] = people[i]
         print(i, people[i])
     else:

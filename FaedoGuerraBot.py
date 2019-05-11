@@ -15,12 +15,11 @@ channel_name = '@FaedoGuerraBotTestChannel'
 def loop_func(state, description):
     img = game_graphics.draw_full_image(state, description)
     rep = report.pretty_report(state['rooms'], description)
-    img.save('img.jpg', 'JPEG')
-    telegram_bot.send_photo(channel_name, open('img.jpg', 'rb'), caption = rep)
-    os.remove('img.jpg')
+    img.save('img.png', 'PNG')
+    telegram_bot.send_photo(channel_name, open('img.png', 'rb'), caption = rep)
+    os.remove('img.png')
     print('Iteration %d' % state['iterations'])
     print(rep)
-    telegram_bot.set_chat_description(channel_name, rep)
     shutil.copy(save_file, save_backup_file)
     pickle.dump(state, open(save_file, 'wb'))
 

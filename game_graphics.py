@@ -14,10 +14,23 @@ def draw_centered_text(imagedraw, xy, *args, **kwargs):
     w, h = imagedraw.textsize(args[0], font = kwargs['font'])
     imagedraw.text((xy[0] - w / 2, xy[1] - h / 2), *args, **kwargs)
 
+def draw_outline_text(imagedraw, xy, t, fill, outline, thickness, **kwargs):
+    x, y = xy
+    for i in range(1, thickness + 1):
+        imagedraw.text((x - i, y), t, fill = outline, **kwargs)
+        imagedraw.text((x + i, y), t, fill = outline, **kwargs)
+        imagedraw.text((x, y - i), t, fill = outline, **kwargs)
+        imagedraw.text((x, y + i), t, fill = outline, **kwargs)
+        imagedraw.text((x - i, y - i), t, fill = outline, **kwargs)
+        imagedraw.text((x - i, y + i), t, fill = outline, **kwargs)
+        imagedraw.text((x + i, y - i), t, fill = outline, **kwargs)
+        imagedraw.text((x + i, y + i), t, fill = outline, **kwargs)
+    imagedraw.text(xy, t, fill = fill, **kwargs)
+
 def draw_enriched_text(rooms, imagedraw, xy, text, **kwargs):
-    offset0 = 20
-    offset1 = 16
-    offset2 = 9
+    offset0 = 28
+    offset1 = 24
+    offset2 = 14
     x, y = xy
     for i, t in zip(itertools.count(), re.split('\[|\]', text)):
         if i % 2:
@@ -28,7 +41,13 @@ def draw_enriched_text(rooms, imagedraw, xy, text, **kwargs):
             imagedraw.rectangle([x - offset0, y - offset0, x + w + offset0, y + h + offset0], fill = 'black')
             imagedraw.rectangle([x - offset1, y - offset1, x + w + offset1, y + h + offset1], fill = tuple(r['boundary_color']))
             imagedraw.rectangle([x - offset2, y - offset2, x + w + offset2, y + h + offset2], fill = tuple(r['color']))
-            imagedraw.text((x, y), t, fill = tuple(r['text_color']), **kwargs)
+            #imagedraw.text((x, y), t, fill = tuple(r['text_color']), **kwargs)
+            '''imagedraw.text((x - 2, y - 2), t, fill = r['shadow_color'], **kwargs)
+            imagedraw.text((x - 2, y + 2), t, fill = r['shadow_color'], **kwargs)
+            imagedraw.text((x + 2, y - 2), t, fill = r['shadow_color'], **kwargs)
+            imagedraw.text((x + 2, y + 2), t, fill = r['shadow_color'], **kwargs)
+            imagedraw.text((x, y), t, fill = r['text_color'], **kwargs)'''
+            draw_outline_text(imagedraw, (x, y), t, fill = r['text_color'], outline = r['shadow_color'], thickness = 3, **kwargs)
             x += w + offset0
         else:
             imagedraw.text((x, y), t, fill = 'black', **kwargs)
@@ -84,15 +103,24 @@ def draw_floor(floor_id, floor, rooms, description, is_large):
     # Labels
     img_pillow = Image.fromarray(img)
     draw_pillow = ImageDraw.Draw(img_pillow)
-    font_rooms = ImageFont.truetype('Roboto-Bold.ttf', size = one_meter)
+    font_rooms = ImageFont.truetype('Roboto-Bold.ttf', size = int(one_meter * 1))
     font_floor = ImageFont.truetype('Roboto-Bold.ttf', size = one_meter * 4)
-    if is_large:
-        for i in floor['rooms']:
-            r = rooms[i]
+    for i in floor['rooms']:
+        r = rooms[i]
+        y, x = r['center']
+        if is_large:
             if description['room'] != i:
                 s = r['short_name'] if 'short_name' in r else r['name']
-                col = 'black' if r['owner'] is None else tuple(rooms[r['owner']]['text_color'])
-                draw_centered_text(draw_pillow, (r['center'][1], r['center'][0]), s, fill = col, font = font_rooms)
+                #col = 'black' if r['owner'] is None else tuple(rooms[r['owner']]['text_color'])
+                col = 'black' if r['owner'] is None else rooms[r['owner']]['text_color']
+                scol = 'white' if r['owner'] is None else rooms[r['owner']]['shadow_color']
+                x -= draw_pillow.textsize(s, font = font_rooms)[0] // 2
+                y -= draw_pillow.textsize(s, font = font_rooms)[1] // 2
+                draw_outline_text(draw_pillow, (x, y), s, fill = col, outline = scol, thickness = 6, font = font_rooms)
+        elif r['owner']:
+            col = rooms[r['owner']]['text_color']
+            rad = one_meter * 0.3
+            draw_pillow.ellipse([x - rad, y - rad, x + rad, y + rad], fill = col)
     draw_pillow.text((1000, 2350), floor['name'], fill = 'black', font = font_floor)
     img_pillow = img_pillow.resize((img_pillow.size[0] // 2, img_pillow.size[1] // 2), Image.BICUBIC)
     return img_pillow
@@ -128,8 +156,8 @@ def draw_sns_vs_sssup(width, height, rooms):
     imagedraw = ImageDraw.Draw(img)
     rectangle_w = width - 10 * one_meter
     rectangle_h = imagedraw.textsize('SNS', font = font)[1]
-    offset0 = 20
-    offset1 = 16
+    offset0 = 28
+    offset1 = 22
     x = one_meter * 5 + offset0
     y = one_meter * 2
     imagedraw.rectangle([x - offset0, y - offset0, x + rectangle_w + offset0, y + rectangle_h + offset0], fill = 'black')
@@ -138,9 +166,10 @@ def draw_sns_vs_sssup(width, height, rooms):
     sssup_rooms = len([() for r in rooms.values() if r['owner'] and r['owner'] <= 167 and r['owner'] % 2 == 0])
     imagedraw.rectangle([x - offset1, y - offset1, x + int(rectangle_w * sns_rooms / len(rooms)), y + rectangle_h + offset1], fill = 'blue')
     imagedraw.rectangle([x + int(rectangle_w * (1 - sssup_rooms / len(rooms))), y - offset1, x + rectangle_w + offset1, y + rectangle_h + offset1], fill = 'red')
-    imagedraw.text((x, y), 'SNS - %d%%' % round(100 * sns_rooms / len(rooms)), fill = 'white', font = font)
+    sns_text = 'SNS - %d%%' % round(100 * sns_rooms / len(rooms))
+    draw_outline_text(imagedraw, (x, y), sns_text, fill = 'white', outline = 'black', thickness = 3, font = font)
     sssup_text = '%d%% - SSSUP' % round(100 * sssup_rooms / len(rooms))
-    imagedraw.text((x + rectangle_w - imagedraw.textsize(sssup_text, font = font)[0], y), sssup_text, fill = 'white', font = font)
+    draw_outline_text(imagedraw, (x + rectangle_w - imagedraw.textsize(sssup_text, font = font)[0], y), sssup_text, fill = 'white', outline = 'black', thickness = 3, font = font)
     return img
     
 def draw_full_image(state, description):
@@ -175,5 +204,5 @@ def draw_full_image(state, description):
         small_floor_img = draw_floor(f, floors[f], rooms, description, False)
         small_floor_img = small_floor_img.resize((small_w, small_h), Image.BICUBIC)
         img.paste(small_floor_img, (large_w + (i % 2) * small_w, report_h + (i // 2) * small_h))
-    return img.convert('RGB')
+    return img
     
