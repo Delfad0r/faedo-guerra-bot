@@ -29,10 +29,25 @@ def check_game_over(state):
     else:
         return None
 
-def main_loop(state, wait_time, func):
-    while check_game_over(state) is None:
-        while(time.time() < state['next_iteration']):
+def main_loop(state, wait_time, begin_func, end_func, save_func, prep_func, main_func):
+    if 'has_begun' not in state:
+        begin_func(state)
+        state['has_begun'] = True
+        state['ready_for_main'] = False
+        save_func(state)
+    while True:
+        if not state['ready_for_main']:
+            state['description'] = one_iteration(state)
+            prep_func(state, state['description'])
+            state['ready_for_main'] = True
+            save_func(state)
+        if time.time() < state['next_iteration']:
             time.sleep(1)
-        state['next_iteration'] += wait_time
-        description = one_iteration(state)
-        func(state, description)
+        else:
+            state['next_iteration'] += wait_time
+            main_func(state, state['description'])
+            state['ready_for_main'] = False
+            save_func(state)
+            if check_game_over(state):
+                end_func(state)
+                return

@@ -12,22 +12,31 @@ import copy
 
 channel_name = '@FaedoGuerraBotTestChannel'
 
-def loop_func(state, description):
-    img = game_graphics.draw_full_image(state, description)
-    rep = report.pretty_report(state['rooms'], description)
+def begin_func(state):
+    img = game_graphics.draw_players_list(state['rooms'])
     img.save('img.png', 'PNG')
+    telegram_bot.send_document(channel_name, open('img.png', 'rb'))
+    os.remove('img.png')
+
+def end_func(state):
+    pass
+
+def save_func(state):
+    shutil.copy(save_file, save_backup_file)
+    pickle.dump(state, open(save_file, 'wb'))
+
+def prep_func(state, description):
+    img = game_graphics.draw_full_image(state, description)
+    img.save('img.png', 'PNG')
+
+def main_func(state, description):
+    rep = report.pretty_report(state['rooms'], description)
     telegram_bot.send_photo(channel_name, open('img.png', 'rb'), caption = rep)
     os.remove('img.png')
     print('Iteration %d' % state['iterations'])
     print(rep)
-    shutil.copy(save_file, save_backup_file)
-    pickle.dump(state, open(save_file, 'wb'))
 
-def fast_loop_func(state, description):
-    pass
-
-state0 = pickle.load(open(save_file, 'rb'))
-state = copy.deepcopy(state0)
+state = pickle.load(open(save_file, 'rb'))
 # Watch out: game_graphics uses random!
 '''if not 'next_iteration' in state:
     state['next_iteration'] = time.time()
@@ -41,4 +50,4 @@ random.setstate(random_state)
 np.random.set_state(np_random_state)'''
 if not 'next_iteration' in state:
     state['next_iteration'] = time.time()
-game_engine.main_loop(state, 0, loop_func)
+game_engine.main_loop(state, 0, begin_func, end_func, save_func, prep_func, main_func)

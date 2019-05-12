@@ -10,10 +10,6 @@ from PIL import Image, ImageDraw, ImageFont
 import report
 from constants import *
 
-def draw_centered_text(imagedraw, xy, *args, **kwargs):
-    w, h = imagedraw.textsize(args[0], font = kwargs['font'])
-    imagedraw.text((xy[0] - w / 2, xy[1] - h / 2), *args, **kwargs)
-
 def draw_outline_text(imagedraw, xy, t, fill, outline, thickness, **kwargs):
     x, y = xy
     for i in range(1, thickness + 1):
@@ -152,7 +148,7 @@ def draw_leaderboard(height, rooms):
 
 def draw_sns_vs_sssup(width, height, rooms):
     font = ImageFont.truetype('Roboto-Bold.ttf', size = int(0.8 * one_meter))
-    img = Image.new('RGBa', (width, height), 'white')
+    img = Image.new('RGBA', (width, height), 'white')
     imagedraw = ImageDraw.Draw(img)
     rectangle_w = width - 10 * one_meter
     rectangle_h = imagedraw.textsize('SNS', font = font)[1]
@@ -205,4 +201,19 @@ def draw_full_image(state, description):
         small_floor_img = small_floor_img.resize((small_w, small_h), Image.BICUBIC)
         img.paste(small_floor_img, (large_w + (i % 2) * small_w, report_h + (i // 2) * small_h))
     return img
+
+def draw_players_list(rooms):
+    font = ImageFont.truetype('Roboto-Bold.ttf', size = int(0.8 * one_meter))
+    img = Image.new('RGBA', (0, 0), 'white')
+    imagedraw = ImageDraw.Draw(img)
+    width = 8 * one_meter + max(imagedraw.textsize(r['person'] + r['name'], font = font)[0] for r in rooms.values() if 'person' in r)
+    height = 62 * one_meter
+    players = ['[%d] %s' % (i, r['name']) for i, r in rooms.items() if 'person' in r]
+    cols = ((len(players) - 1) // 20) + 1
+    img = Image.new('RGBA', (width * cols, height), 'white')
+    imagedraw = ImageDraw.Draw(img)
+    for i, s in zip(itertools.count(), players):
+        draw_enriched_text(rooms, imagedraw, (4 * one_meter + width * (i // 20), one_meter * (2 + 3 * (i % 20))), s, font = font)
+    return img
+    
     
