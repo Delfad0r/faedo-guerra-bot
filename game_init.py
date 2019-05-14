@@ -6,8 +6,12 @@ from scipy import ndimage, spatial
 from skimage import morphology, transform
 import random
 import colorsys
+import sys
+import time
 
 from constants import *
+
+first_iteration = time.mktime(time.strptime(sys.argv[1], '%d/%m/%y %H:%M'))
 
 with open(rooms_file, 'rb') as fin:
     rooms = pickle.load(fin)
@@ -93,7 +97,7 @@ for i, r in rooms.items():
     else:
         r['owner'] = None
 
-state = {'rooms' : rooms, 'floors' : floors, 'iterations' : 0}
+state = {'rooms' : rooms, 'floors' : floors, 'iterations' : 0, 'next_iteration' : first_iteration}
 
 with open(save_file, 'wb') as fout:
     pickle.dump(state, fout)

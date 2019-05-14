@@ -5,6 +5,8 @@ import time
 from constants import *
 
 def one_iteration(state):
+    random.setstate(state['random_state'])
+    np.random.set_state(state['np_random_state'])
     rooms = state['rooms']
     floors = state['floors']
     attacker = random.choice(list(r for r in rooms.values() if r['owner'] is not None))['owner']
@@ -20,6 +22,8 @@ def one_iteration(state):
     #description = "%s ha conquistato %s, sottraendola a %s" % (rooms[attacker]['name'], rooms[defender]['name'], rooms[rooms[defender]['owner']]['name'])
     rooms[defender]['owner'] = attacker
     state['iterations'] += 1
+    state['random_state'] = random.getstate()
+    state['np_random_state'] = np.random.get_state()
     return description
 
 def check_game_over(state):
@@ -48,6 +52,7 @@ def main_loop(state, wait_time, begin_func, end_func, save_func, prep_func, main
             main_func(state, state['description'])
             state['ready_for_main'] = False
             save_func(state)
-            if check_game_over(state):
-                end_func(state)
+            survivor = check_game_over(state)
+            if survivor:
+                end_func(state, survivor)
                 return

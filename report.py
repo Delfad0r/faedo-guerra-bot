@@ -9,7 +9,7 @@ def generate_report(rooms, description):
         if any(r['owner'] == prev_owner for r in rooms.values()):
             return '[%d] ha conquistato %s, precedentemente di [%d]' % (new_owner, rooms[room]['name'], prev_owner)
         else:
-            return '[%d] ha conquistato %s, obliterando [%d] dalla faccia del Faedo' % (new_owner, rooms[room]['name'], prev_owner)
+            return '[%d] ha conquistato %s, cancellando [%d] dalla faccia del Faedo' % (new_owner, rooms[room]['name'], prev_owner)
     else:
         return '[%d] ha conquistato %s' % (new_owner, rooms[room]['name'])
 
