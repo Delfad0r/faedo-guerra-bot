@@ -69,4 +69,4 @@ while True:
     del state0['random_state']
     del state0['np_random_state']
 
-game_engine.main_loop(state0, 0, begin_func, end_func, save_func, prep_func, main_func)
+game_engine.main_loop(state0, 5 * 60, begin_func, end_func, save_func, prep_func, main_func)

@@ -4,7 +4,7 @@ import requests
 import urllib.parse
 
 with open('token.txt') as fin:
-    token = fin.read()
+    token = fin.read().strip()
 
 base_url = 'https://api.telegram.org/bot' + token 
 
