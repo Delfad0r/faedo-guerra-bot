@@ -48,7 +48,7 @@ def main_loop(state, wait_time, begin_func, end_func, save_func, prep_func, main
         if time.time() < state['next_iteration']:
             time.sleep(1)
         else:
-            state['next_iteration'] += wait_time
+            state['next_iteration'] = max(state['next_iteration'], time.time()) + wait_time
             main_func(state, state['description'])
             state['ready_for_main'] = False
             save_func(state)

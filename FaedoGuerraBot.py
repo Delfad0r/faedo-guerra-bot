@@ -25,13 +25,13 @@ def begin_func(state):
     telegram_bot.send_message(channel_name, 'Sta per cominciare la Grande Guerra del Faedo: tenetevi pronti!')
     telegram_bot.send_message(channel_name, 'Ecco l\'elenco dei prodi combattenti')
     img = game_graphics.draw_players_list(state['rooms'])
-    img.save('img.png', 'PNG')
-    telegram_bot.send_document(channel_name, open('img.png', 'rb'))
-    os.remove('img.png')
+    img.save('ProdiCombattenti.png', 'PNG')
+    telegram_bot.send_document(channel_name, open('ProdiCombattenti.png', 'rb'))
+    os.remove('ProdiCombattenti.png')
     send_all_floors(state)
     b_time = time.localtime(state['next_iteration'])
     telegram_bot.send_message(channel_name,
-        'Le ostilità si apriranno ufficialmente il %s alle ore %s.'
+        'Le ostilità si apriranno ufficialmente il %s alle ore %s'
         % (time.strftime('%d/%m/%y', b_time), time.strftime('%H:%M', b_time)))
 
 def end_func(state, survivor):
