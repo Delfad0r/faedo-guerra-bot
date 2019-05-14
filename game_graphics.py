@@ -24,9 +24,8 @@ def draw_outline_text(imagedraw, xy, t, fill, outline, thickness, **kwargs):
     imagedraw.text(xy, t, fill = fill, **kwargs)
 
 def draw_enriched_text(rooms, imagedraw, xy, text, **kwargs):
-    offset0 = 28
-    offset1 = 24
-    offset2 = 14
+    offset0 = 20
+    offset1 = 14
     x, y = xy
     for i, t in zip(itertools.count(), re.split('\[|\]', text)):
         if i % 2:
@@ -35,15 +34,8 @@ def draw_enriched_text(rooms, imagedraw, xy, text, **kwargs):
             t = r['person']
             w, h = imagedraw.textsize(t, font = kwargs['font'])
             imagedraw.rectangle([x - offset0, y - offset0, x + w + offset0, y + h + offset0], fill = 'black')
-            imagedraw.rectangle([x - offset1, y - offset1, x + w + offset1, y + h + offset1], fill = tuple(r['boundary_color']))
-            imagedraw.rectangle([x - offset2, y - offset2, x + w + offset2, y + h + offset2], fill = tuple(r['color']))
-            #imagedraw.text((x, y), t, fill = tuple(r['text_color']), **kwargs)
-            '''imagedraw.text((x - 2, y - 2), t, fill = r['shadow_color'], **kwargs)
-            imagedraw.text((x - 2, y + 2), t, fill = r['shadow_color'], **kwargs)
-            imagedraw.text((x + 2, y - 2), t, fill = r['shadow_color'], **kwargs)
-            imagedraw.text((x + 2, y + 2), t, fill = r['shadow_color'], **kwargs)
-            imagedraw.text((x, y), t, fill = r['text_color'], **kwargs)'''
-            draw_outline_text(imagedraw, (x, y), t, fill = r['text_color'], outline = r['shadow_color'], thickness = 3, **kwargs)
+            imagedraw.rectangle([x - offset1, y - offset1, x + w + offset1, y + h + offset1], fill = tuple(r['color']))
+            draw_outline_text(imagedraw, (x, y), t, fill = 'white', outline = 'black', thickness = 3, **kwargs)
             x += w + offset0
         else:
             imagedraw.text((x, y), t, fill = 'black', **kwargs)
@@ -54,24 +46,22 @@ def draw_floor(floor_id, floor, rooms, description, is_large):
     walls_img = imageio.imread('data/%s-walls.png' % floor_id)
     rooms_img = imageio.imread('data/%s-rooms.png' % floor_id)
     regions, num_regions = ndimage.label(walls_img[:, :, 3] == 0)
-    palette = np.ones((num_regions + 2, 4), dtype = 'uint8') * 255
-    palette_boundary = np.ones((num_regions + 2, 4), dtype = 'uint8') * 255
+    palette = np.ones((num_regions + 1, 4), dtype = 'uint8') * 255
     palette[0] = [0, 0, 0, 255]
-    palette_boundary[0] = [0, 0, 0, 255]
     for i in floor['rooms']:
         r = rooms[i]
         if r['owner']:
             palette[regions[r['inside_point']]] = rooms[r['owner']]['color']
-            palette_boundary[regions[r['inside_point']]] = rooms[r['owner']]['boundary_color']
-    boundary_mask = filters.gaussian(morphology.binary_dilation(walls_img[:, :, 3] > 0, morphology.disk(one_meter * 0.5)), one_meter / 10)
+        if description['room'] == i:
+            palette[regions[r['inside_point']]] = rooms[description['prev_owner']]['color'] if description['prev_owner'] else np.array([255, 255, 255, 255], dtype = 'uint8')
+    img = palette[regions].astype('uint8')
     if description['room'] in floor['rooms']:
         r = rooms[description['room']]
         room_region = regions == regions[r['inside_point']]
         rc = r['center']
-        update_mask = np.zeros(boundary_mask.shape, dtype = 'bool')
+        update_mask = np.zeros(regions.shape, dtype = 'bool')
         bbox0 = np.where(np.any(room_region, axis = 1))[0][[0, -1]]
         bbox1 = np.where(np.any(room_region, axis = 0))[0][[0, -1]]
-        #m = update_mask[max(0, rc[0] - 6 * one_meter) : rc[0] + 6 * one_meter, max(0, rc[1] - 15 * one_meter) : rc[1] + 15 * one_meter]
         m = update_mask[bbox0[0] - 2 * one_meter : bbox0[1] + 2 * one_meter, bbox1[0] - 2 * one_meter : bbox1[1] + 2 * one_meter]
         m[:, :] = morphology.binary_dilation(
             draw.random_shapes(
@@ -84,18 +74,11 @@ def draw_floor(floor_id, floor, rooms, description, is_large):
                 shape = 'circle',
                 allow_overlap = True
             )[0] < 255,
-            morphology.disk(one_meter * 0.4)
+            morphology.disk(one_meter * 0.5)
             )
-        update_mask = 1 - update_mask
-        boundary_mask = np.where(update_mask + 1 - room_region, boundary_mask, filters.gaussian(morphology.binary_dilation(update_mask, morphology.disk(one_meter // 3)), one_meter / 10))
-        regions = np.where(update_mask * room_region, num_regions + 1, regions)
-        if description['prev_owner']:
-            oldr = rooms[description['prev_owner']]
-            palette[num_regions + 1] = oldr['color']
-            palette_boundary[num_regions + 1] = oldr['boundary_color']
-    img = (boundary_mask[:, :, None] * palette_boundary[regions] + (1 - boundary_mask[:, :, None]) * palette[regions]).astype('uint8')
-    #img = transform.downscale_local_mean(img.astype('uint8'), (2, 2, 1), 255).astype('uint8')
-    #return img
+        img = np.where(np.logical_and(update_mask, room_region)[:, :, None], np.array((0, 0, 0, 255), dtype = 'uint8'), img)
+        m[:, :] = morphology.binary_erosion(m, morphology.disk(one_meter * 0.2))
+        img = np.where(np.logical_and(update_mask, room_region)[:, :, None], rooms[description['new_owner']]['color'], img)
     # Labels
     img_pillow = Image.fromarray(img)
     draw_pillow = ImageDraw.Draw(img_pillow)
@@ -106,17 +89,12 @@ def draw_floor(floor_id, floor, rooms, description, is_large):
         y, x = r['center']
         if is_large:
             if description['room'] != i:
-                s = r['short_name'] if 'short_name' in r else r['name']
-                #col = 'black' if r['owner'] is None else tuple(rooms[r['owner']]['text_color'])
-                col = 'black' if r['owner'] is None else rooms[r['owner']]['text_color']
-                scol = 'white' if r['owner'] is None else rooms[r['owner']]['shadow_color']
+                s = r['short_name']
+                col = 'black' if r['owner'] is None else 'white'
+                scol = 'white' if r['owner'] is None else 'black'
                 x -= draw_pillow.textsize(s, font = font_rooms)[0] // 2
                 y -= draw_pillow.textsize(s, font = font_rooms)[1] // 2
                 draw_outline_text(draw_pillow, (x, y), s, fill = col, outline = scol, thickness = 6, font = font_rooms)
-        elif r['owner']:
-            col = rooms[r['owner']]['text_color']
-            rad = one_meter * 0.3
-            draw_pillow.ellipse([x - rad, y - rad, x + rad, y + rad], fill = col)
     draw_pillow.text((1000, 2350), floor['name'], fill = 'black', font = font_floor)
     img_pillow = img_pillow.resize((img_pillow.size[0] // 2, img_pillow.size[1] // 2), Image.BICUBIC)
     return img_pillow

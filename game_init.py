@@ -4,8 +4,6 @@ import pickle
 import numpy as np 
 from scipy import ndimage, spatial
 from skimage import morphology, transform
-import random
-import colorsys
 import sys
 import time
 
@@ -26,6 +24,12 @@ people = {}
 with open(people_file, 'r') as fin:
     for i, p in zip(itertools.count(1), fin.read().splitlines()):
         people[i] = p
+
+with open(colors_file, 'r') as fin:
+    colors = [np.array(tuple(map(int, c.split())) + (255, ), dtype = 'uint8') for c in fin]
+    colors = [c for c in colors if 255 * 4 - 100 >= c.sum() >= 255 + 100]
+    colors.reverse()
+        
 
 print(floors)
 
@@ -48,50 +52,16 @@ for i, f in floors.items():
         boundary[r] = np.transpose(boundary_list)[np.where(regions[boundary_list] == reg)]
     for j in f['rooms']:
         r = rooms[j]
-        #r['dist'].update({k : np.linalg.norm(np.array(r['center']) - np.array(s['center'])) + np.min(spatial.distance.cdist(boundary[j], boundary[k])) for k, s in
         r['dist'].update({k : np.min(spatial.distance.cdist(boundary[j], boundary[k])) / 2 for k in f['rooms']})
 
 for s in stairs:
     for i in range(len(s) - 1):
         rooms[s[i]]['dist'][s[i + 1]] = 0
         rooms[s[i + 1]]['dist'][s[i]] = 0
-
-'''colors = []
-for i in np.linspace(0, 1, 14, endpoint = False):
-    for j in np.linspace(0, 1, 14, endpoint = False):
-        if abs(i - j) > 1e-3:
-            colors.append(
-                ((np.array(colorsys.hsv_to_rgb(i, 0.9, 0.75) + (1, )) * 255).astype('uint8'),
-                 (np.array(colorsys.hsv_to_rgb(j, 1, 1) + (1, )) * 255).astype('uint8'))
-                )
-'''
-'''colors = [
-    ((np.array(colorsys.hsv_to_rgb(i / 15, 1, 0.8) + (1, )) * 255).astype('uint8'),
-    (np.array(colorsys.hsv_to_rgb(j / 15, 1, 1) + (1, )) * 255).astype('uint8'))
-    for i in range(15) for j in range(15) if 1 < (j - i) % 15 < 14
-    ]'''
-
-hues = [i for i in [0, 25, 50, 80, 120, 160, 200, 230, 270, 310]]
-colors = [
-    ((np.array(colorsys.hsv_to_rgb(i / 360, 1, 0.8) + (1, )) * 255).astype('uint8'),
-    (np.array(colorsys.hsv_to_rgb(j / 360, 1, 1) + (1, )) * 255).astype('uint8'),
-    k, l)
-    for i in hues for j in hues if i != j
-    #for k in [np.array((255, 255, 255, 255), dtype = 'uint8'), (np.array(colorsys.hsv_to_rgb(((i + 5.5) % 11) / 11, 1, 1) + (1, )) * 255).astype('uint8')]
-    for k, l in [('black', 'white'), ('white', 'black')]
-    ]
-random.shuffle(colors)
-
-'''for k, r in rooms.items():
-    if 'neutral' in r:
-        r['owner'] = None
-    else:
-        r['owner'] = k
-        r['color'], r['boundary_color'] = colors.pop()'''
 for i, r in rooms.items():
     if i in people and people[i]:
         r['owner'] = i
-        r['color'], r['boundary_color'], r['text_color'], r['shadow_color'] = colors.pop()
+        r['color'] = colors.pop()
         r['person'] = people[i]
         print(i, people[i])
     else:
