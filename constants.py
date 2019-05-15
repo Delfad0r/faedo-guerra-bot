@@ -1,7 +1,7 @@
 one_meter = 40
 
 fake_description = {'room' : -1, 'prev_owner' : -1, 'new_owner' : -1}
-max_iterations = 1200
+max_iterations = 1300
 
 colors_file = 'data/colors.txt'
 rooms_file = 'data/rooms.txt'
