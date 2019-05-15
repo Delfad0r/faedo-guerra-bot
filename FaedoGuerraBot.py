@@ -55,10 +55,9 @@ def main_func(state, description):
     print(rep)
 
 state0 = pickle.load(open(save_file, 'rb'))
-while True:
-    if 'random_state' not in state0:
-        state0['random_state'] = random.getstate()
-        state0['np_random_state'] = np.random.get_state()
+while 'random_state' not in state0:
+    state0['random_state'] = random.getstate()
+    state0['np_random_state'] = np.random.get_state()
     print('Simulazione in corso...')
     state = copy.deepcopy(state0)
     state['next_iteration'] = time.time()
