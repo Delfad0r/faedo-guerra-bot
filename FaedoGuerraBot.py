@@ -35,9 +35,9 @@ def begin_func(state):
         % (time.strftime('%d/%m/%y', b_time), time.strftime('%H:%M', b_time)))
 
 def end_func(state, survivor):
-    telegram_bot.send_message('La Grande Guerra del Faedo è terminata')
+    telegram_bot.send_message(channel_name, 'La Grande Guerra del Faedo è terminata')
     send_all_floors(state)
-    telegram_bot.send_message('%s è Campione del Faedo!' % state['rooms'][survivor]['person'])
+    telegram_bot.send_message(channel_name, '%s è Campione del Faedo!' % state['rooms'][survivor]['person'])
 
 def save_func(state):
     shutil.copy(save_file, save_backup_file)
@@ -59,13 +59,25 @@ while True:
     if 'random_state' not in state0:
         state0['random_state'] = random.getstate()
         state0['np_random_state'] = np.random.get_state()
+    print('Simulazione in corso...')
     state = copy.deepcopy(state0)
+    epic_battle = False
     def do_nothing(*args):
         pass
-    game_engine.main_loop(state, 0, do_nothing, do_nothing, do_nothing, do_nothing, do_nothing)
-    if state['iterations'] <= max_iterations:
+    def test_epic_battle(state, description):
+        global epic_battle
+        if not epic_battle:
+            leaders = {r['owner'] : 0 for r in state['rooms'].values() if r['owner']}
+            for r in state['rooms'].values():
+                if r['owner']:
+                    leaders[r['owner']] += 1
+            if sum(1 for c in leaders.values() if c >= 50) >= 2:
+                epic_battle = True
+    game_engine.main_loop(state, 0, do_nothing, do_nothing, do_nothing, do_nothing, test_epic_battle)
+    if state['iterations'] <= max_iterations and epic_battle:
         print('La Grande Guerra del Faedo durerà %d turni' % state['iterations'])
         break
+    print('La simulazione è durata %d turni, %s battaglie epiche' % (state['iterations'], 'con' if epic_battle else 'senza'))
     del state0['random_state']
     del state0['np_random_state']
 

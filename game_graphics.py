@@ -113,7 +113,7 @@ def draw_leaderboard(height, rooms):
     width = 9 * one_meter+ imagedraw.textsize(' ha 999 stanze', font = font)[0] + max(imagedraw.textsize(r['person'], font = font)[0] for r in rooms.values() if 'person' in r)
     img = Image.new('RGBA', (width, height), 'white')
     imagedraw = ImageDraw.Draw(img)
-    leaders = {r['owner'] : 0 for r in rooms.values()}
+    leaders = {r['owner'] : 0 for r in rooms.values() if r['owner']}
     for r in rooms.values():
         if r['owner']:
             leaders[r['owner']] += 1

@@ -6,6 +6,7 @@ from scipy import ndimage, spatial
 from skimage import morphology, transform
 import sys
 import time
+import random
 
 from constants import *
 
@@ -27,8 +28,8 @@ with open(people_file, 'r') as fin:
 
 with open(colors_file, 'r') as fin:
     colors = [np.array(tuple(map(int, c.split())) + (255, ), dtype = 'uint8') for c in fin]
-    colors = [c for c in colors if 255 * 4 - 100 >= c.sum() >= 255 + 100]
-    colors.reverse()
+    colors = [c for c in colors if 255 * 4 - 100 >= c.sum() >= 255 + 100][: len([p for p in people.values() if p])]
+    random.shuffle(colors)
         
 
 print(floors)

@@ -16,10 +16,7 @@ def one_iteration(state):
     rooms_idx, rooms_prob = zip(*((i, compute_prob(r)) for i, r in rooms.items() if r['owner'] != attacker))
     rooms_prob /= sum(rooms_prob)
     defender = np.random.choice(rooms_idx, size = 1, replace = True, p = rooms_prob)[0]
-    #print(list(zip(rooms_idx, rooms_prob)))
-    #print([p for i, p in zip(rooms_idx, rooms_prob) if i == defender][0])
     description = {'room' : defender, 'prev_owner' : rooms[defender]['owner'], 'new_owner' : attacker}
-    #description = "%s ha conquistato %s, sottraendola a %s" % (rooms[attacker]['name'], rooms[defender]['name'], rooms[rooms[defender]['owner']]['name'])
     rooms[defender]['owner'] = attacker
     state['iterations'] += 1
     state['random_state'] = random.getstate()
