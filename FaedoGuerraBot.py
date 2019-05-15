@@ -61,6 +61,7 @@ while True:
         state0['np_random_state'] = np.random.get_state()
     print('Simulazione in corso...')
     state = copy.deepcopy(state0)
+    state['next_iteration'] = time.time()
     epic_battle = False
     def do_nothing(*args):
         pass
