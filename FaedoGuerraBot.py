@@ -71,7 +71,7 @@ while True:
             for r in state['rooms'].values():
                 if r['owner']:
                     leaders[r['owner']] += 1
-            if sum(1 for c in leaders.values() if c >= 50) >= 2:
+            if sum(1 for c in leaders.values() if c >= epic_battle_treshold) >= 2:
                 epic_battle = True
     game_engine.main_loop(state, 0, do_nothing, do_nothing, do_nothing, do_nothing, test_epic_battle)
     if state['iterations'] <= max_iterations and epic_battle:
