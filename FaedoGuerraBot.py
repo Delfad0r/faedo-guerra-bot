@@ -72,7 +72,7 @@ while 'random_state' not in state0:
                 if r['owner']:
                     leaders[r['owner']] += 1
             leaders = sorted(leaders.items(), key = lambda x: x[1], reverse = True)[: 2]
-            if len(leaders) == 2 and leaders[1][1] >= 60 and leaders[0][1] - leaders[1][1] <= 10 and (leaders[0][0] + leaders[1][0]) % 2 == 1:
+            if len(leaders) == 2 and leaders[1][1] >= 50 and leaders[0][1] - leaders[1][1] <= 10 and (leaders[0][0] + leaders[1][0]) % 2 == 1:
                 epic_battle = True
     game_engine.main_loop(state, 0, do_nothing, do_nothing, do_nothing, do_nothing, test_epic_battle)
     if state['iterations'] <= max_iterations and epic_battle:

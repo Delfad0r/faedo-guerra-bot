@@ -30,9 +30,6 @@ with open(colors_file, 'r') as fin:
     colors = [np.array(tuple(map(int, c.split())) + (255, ), dtype = 'uint8') for c in fin]
     colors = [c for c in colors if 255 * 4 - 100 >= c.sum() >= 255 + 100][: len([p for p in people.values() if p])]
     random.shuffle(colors)
-        
-
-print(floors)
 
 for r in rooms.values():
     r['dist'] = {i : float('inf') for i in rooms}
@@ -54,6 +51,7 @@ for i, f in floors.items():
     for j in f['rooms']:
         r = rooms[j]
         r['dist'].update({k : np.min(spatial.distance.cdist(boundary[j], boundary[k])) / 2 for k in f['rooms']})
+        print(r['name'])
 
 for s in stairs:
     for i in range(len(s) - 1):
