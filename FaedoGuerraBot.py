@@ -95,4 +95,4 @@ while 'random_state' not in state0:
     del state0['random_state']
     del state0['np_random_state']
 
-game_engine.main_loop(state0, 60, begin_func, end_func, save_func, prep_func, main_func)
+game_engine.main_loop(state0, 30 * 60, begin_func, end_func, save_func, prep_func, main_func)
