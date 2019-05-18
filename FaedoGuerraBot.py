@@ -1,16 +1,23 @@
+import copy
+import getpass
 import numpy as np
 import pickle
 import time
 import shutil
+import subprocess
 import os
 import random
 
 from constants import *
 import game_engine, game_graphics, telegram_bot, report
 
-import copy
 
 channel_name = '@FaedoGuerraBotTestChannel'
+
+def upload_image_ssh(src, dest):
+    global username, password
+    while subprocess.run(['sshpass', '-p', password, 'scp', '-oStrictHostKeyChecking=no', '-oUserKnownHostsFile=/dev/null', src, '%s@ssh.uz.sns.it:~/nobackup/public_html/%s' % (username, dest)]).returncode != 0:
+        pass
 
 def send_all_floors(state):
     for i, f in state['floors'].items():
@@ -27,6 +34,7 @@ def begin_func(state):
     img = game_graphics.draw_players_list(state['rooms'])
     img.save('ProdiCombattenti.png', 'PNG')
     telegram_bot.send_document(channel_name, open('ProdiCombattenti.png', 'rb'))
+    upload_image_ssh('ProdiCombattenti.png', online_img_file)
     os.remove('ProdiCombattenti.png')
     send_all_floors(state)
     b_time = time.localtime(state['next_iteration'])
@@ -50,9 +58,14 @@ def prep_func(state, description):
 def main_func(state, description):
     rep = report.pretty_report(state['rooms'], description)
     telegram_bot.send_photo(channel_name, open('img.png', 'rb'), caption = rep)
+    upload_image_ssh('img.png', online_img_file)
     os.remove('img.png')
     print('Turno %d' % state['iterations'])
     print(rep)
+
+print('Username UZ: ', end = '')
+username = input()
+password = getpass.getpass()
 
 state0 = pickle.load(open(save_file, 'rb'))
 while 'random_state' not in state0:
@@ -82,4 +95,4 @@ while 'random_state' not in state0:
     del state0['random_state']
     del state0['np_random_state']
 
-game_engine.main_loop(state0, 0, begin_func, end_func, save_func, prep_func, main_func)
+game_engine.main_loop(state0, 60, begin_func, end_func, save_func, prep_func, main_func)

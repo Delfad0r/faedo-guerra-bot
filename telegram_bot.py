@@ -10,11 +10,13 @@ base_url = 'https://api.telegram.org/bot' + token
 
 def telegram_request(func):
     def decorator(*args, **kwargs):
-        try:
-            response = requests.post(**func(*args, **kwargs), timeout = 15)
-        except Exception as e:
-            print(str(e))
-            return []
+        success = False
+        while not success:
+            try:
+                response = requests.post(**func(*args, **kwargs), timeout = 15)
+                success = True
+            except Exception as e:
+                print('Error: \'%s\' - Retrying' % str(e))
         data = response.json()
         if not data['ok']:
             raise Exception(data['description'])

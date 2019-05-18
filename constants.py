@@ -10,3 +10,5 @@ stairs_file = 'data/stairs.txt'
 people_file = 'data/people.txt'
 save_file = 'save.txt'
 save_backup_file = 'save.backup'
+
+online_img_file = 'faedo-guerra-bot.png'
