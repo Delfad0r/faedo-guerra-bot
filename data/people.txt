@@ -1,5 +1,5 @@
 Davide Gori
-
+Gian Mario Bisogno
 Gabriele Viola
 
 Francesco Auxilia
@@ -9,22 +9,22 @@ Federico Fiorentini
 Paolo Tognini
 Filippo Galli
 
-Giulia Carabelli
+Federico Gelsi
 
-
+Carlo Favaretto
 
 
 Pasquale Miglionico
-Maria Chiara Cabiddu
+Mariachiara Cabiddu
 Alessio Marchetti
 Matteo Ronga
 Sofia Casini
-Ivan Di Rosa
+Navid Valente
 Lorenzo Bresolin
 Carlo Belardini
 Luca Fusar Bassini
 Francesco Bortolomai
-Stefan Paula
+Paula Stefan
 Jacopo Quaglierini
 Alessandro Passera
 Jacopo Carlon
@@ -45,7 +45,7 @@ Filippo Michelis
 Leonardo D'Addario
 Francesca Ballardini
 Giulia Cantamessi
-Daniel Johannes Sessen
+Sessen Daniel Johannes
 Davide Novati
 Alice Lacchei
 
@@ -105,7 +105,7 @@ Giorgio Donati
 Cristiano D'Orso
 Elisa Gallo
 Lorenzo Ferrini
-Giulio De Angeli
+Giulio Deangeli
 Giacomo Colombo
 Alessandro Bouchs
 Lorenzo Frigoli
@@ -151,7 +151,7 @@ Eleonora Granata
 Loris Donda
 Francesco D'Acunto
 Angelo Gargiulo
-
+Riccardo Sparagna
 Massimo Bilancioni
 Bruno Russo
 Mauro Battipede
