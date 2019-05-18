@@ -12,7 +12,7 @@ from constants import *
 import game_engine, game_graphics, telegram_bot, report
 
 
-channel_name = '@FaedoGuerraBotTestChannel'
+channel_name = '@FaedoGuerraBotChannel'
 
 def upload_image_ssh(src, dest):
     global username, password
