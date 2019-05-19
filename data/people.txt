@@ -1,7 +1,7 @@
 Davide Gori
 Gian Mario Bisogno
 Gabriele Viola
-Alessio Gaspare Grancagnolo
+Alessio Grancagnolo
 Francesco Auxilia
 Federico Fiorentini
 
@@ -11,7 +11,7 @@ Filippo Galli
 
 Federico Gelsi
 
-Carlo Favaretto
+Andrea Cappelli
 
 
 Pasquale Miglionico
@@ -19,7 +19,7 @@ Mariachiara Cabiddu
 Alessio Marchetti
 Matteo Ronga
 Sofia Casini
-Navid Valente
+Ivan Di Rosa
 Lorenzo Bresolin
 Carlo Belardini
 Luca Fusar Bassini
