@@ -136,8 +136,8 @@ def draw_sns_vs_sssup(width, height, rooms):
     y = one_meter * 2
     imagedraw.rectangle([x - offset0, y - offset0, x + rectangle_w + offset0, y + rectangle_h + offset0], fill = 'black')
     imagedraw.rectangle([x - offset1, y - offset1, x + rectangle_w + offset1, y + rectangle_h + offset1], fill = 'white')
-    sns_rooms = len([() for r in rooms.values() if r['owner'] and r['owner'] <= 167 and r['owner'] % 2 == 1])
-    sssup_rooms = len([() for r in rooms.values() if r['owner'] and r['owner'] <= 167 and r['owner'] % 2 == 0])
+    sns_rooms = len([() for r in rooms.values() if r['owner'] and r['owner'] <= 167 and r['owner'] % 2 == 1 and r['owner'] != 107])
+    sssup_rooms = len([() for r in rooms.values() if r['owner'] and r['owner'] <= 167 and (r['owner'] % 2 == 0 or r['owner'] == 107)])
     imagedraw.rectangle([x - offset1, y - offset1, x + int(rectangle_w * sns_rooms / len(rooms)), y + rectangle_h + offset1], fill = 'blue')
     imagedraw.rectangle([x + int(rectangle_w * (1 - sssup_rooms / len(rooms))), y - offset1, x + rectangle_w + offset1, y + rectangle_h + offset1], fill = 'red')
     sns_text = 'SNS - %d%%' % round(100 * sns_rooms / len(rooms))
