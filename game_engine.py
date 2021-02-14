@@ -57,8 +57,6 @@ def one_iteration(state):
                     state['r0'][0].append(0)
                     i = state['infected'].index(rooms[defender]['owner'])
                     state['r0'][0][state['r0'][1][i]] += 1
-                else:
-                    print(f"{rooms[attacker]['person']} has immunity level {state['immunity'][attacker]}")
             rooms[defender]['owner'] = attacker
     state['immunity'] = [max(i - 1, 0) for i in state['immunity']]
     state['iterations'] += 1
