@@ -193,7 +193,7 @@ def draw_stats(width, height, state):
     
 def draw_full_image(state, description):
     if len(state['r0'][0]):
-        print('R0 list:', state['r0'][0]})
+        print('R0 list:', state['r0'][0])
     rooms = state['rooms']
     floors = state['floors']
     if description['type'] == 'attack':
