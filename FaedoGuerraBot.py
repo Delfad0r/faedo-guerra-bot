@@ -17,23 +17,26 @@ channel_name = '@FaedoGuerraBotTestChannel'
 def upload_image_ssh(src, dest):
     global username, password
     while subprocess.run(['sshpass', '-p', password, 'scp', '-oStrictHostKeyChecking=no', '-oUserKnownHostsFile=/dev/null', src, '%s@ssh.uz.sns.it:~/nobackup/public_html/%s' % (username, dest)]).returncode != 0:
-        pass
+        time.sleep(1)
 
 def send_all_floors(state):
     for i in state['floors']:
         img = game_graphics.draw_floor(i, state, fake_description, True)
         img.save('img%s.png' % i, 'PNG')
-    telegram_bot.send_photo_group(channel_name, [open('img%s.png' % i, 'rb')
-        for i in sorted(state['floors'].keys(), key = lambda i: state['floors'][i]['altitude'])])
+    while telegram_bot.send_photo_group(channel_name, [open('img%s.png' % i, 'rb') for i in sorted(state['floors'].keys(), key = lambda i: state['floors'][i]['altitude'])]) is None:
+        time.slee(1)
     for i in state['floors']:
         os.remove('img%s.png' % i)
         
 def begin_func(state):
-    telegram_bot.send_message(channel_name, 'Sta per cominciare la Grande Guerra del Faedo: tenetevi pronti!')
-    telegram_bot.send_message(channel_name, 'Ecco l\'elenco dei prodi combattenti')
+    while telegram_bot.send_message(channel_name, 'Sta per cominciare la Grande Guerra del Faedo: tenetevi pronti!') is None:
+        time.sleep(1)
+    while telegram_bot.send_message(channel_name, 'Ecco l\'elenco dei prodi combattenti') is None:
+        time.sleep(1)
     img = game_graphics.draw_players_list(state)
     img.save('ProdiCombattenti.png', 'PNG')
-    telegram_bot.send_document(channel_name, open('ProdiCombattenti.png', 'rb'))
+    while telegram_bot.send_document(channel_name, open('ProdiCombattenti.png', 'rb')) is None:
+        time.sleep(1)
     #upload_image_ssh('ProdiCombattenti.png', online_img_file)
     os.remove('ProdiCombattenti.png')
     send_all_floors(state)
@@ -43,9 +46,11 @@ def begin_func(state):
         % (time.strftime('%d/%m/%y', b_time), time.strftime('%H:%M', b_time)))
 
 def end_func(state, survivor):
-    telegram_bot.send_message(channel_name, 'La Grande Guerra del Faedo è terminata')
+    while telegram_bot.send_message(channel_name, 'La Grande Guerra del Faedo è terminata') is None:
+        time.sleep(1)
     send_all_floors(state)
-    telegram_bot.send_message(channel_name, '%s è Campione del Faedo!' % state['rooms'][survivor]['person'])
+    while telegram_bot.send_message(channel_name, '%s è Campione del Faedo!' % state['rooms'][survivor]['person']) is None:
+        time.sleep(1)
 
 def save_func(state):
     shutil.copy(save_file, save_backup_file)
@@ -57,8 +62,8 @@ def prep_func(state, description):
 
 def main_func(state, description):
     rep = report.pretty_report(state, description)
-    time.sleep(.1)
-    telegram_bot.send_photo(channel_name, open('img.png', 'rb'), caption = rep)
+    while telegram_bot.send_photo(channel_name, open('img.png', 'rb'), caption = rep) is None:
+        time.sleep(1)
     #upload_image_ssh('img.png', online_img_file)
     os.remove('img.png')
     print('Turno %d' % state['iterations'])
