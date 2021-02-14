@@ -1,30 +1,73 @@
+from collections import deque
 import numpy as np
 import random
 import time
 
-from constants import *
+from FGBconstants import *
 
 def one_iteration(state):
     random.setstate(state['random_state'])
     np.random.set_state(state['np_random_state'])
     rooms = state['rooms']
     floors = state['floors']
-    attacker = random.choice(list(r for r in rooms.values() if r['owner'] is not None))['owner']
-    def compute_prob(r):
-        sigma = one_meter * 0.6
-        return sum(np.exp(-max(0, r['dist'][i] - one_meter) ** 2 / (2 * sigma ** 2)) for i, s in rooms.items() if s['owner'] == attacker)
-    rooms_idx, rooms_prob = zip(*((i, compute_prob(r)) for i, r in rooms.items() if r['owner'] != attacker))
-    rooms_prob /= sum(rooms_prob)
-    defender = np.random.choice(rooms_idx, size = 1, replace = True, p = rooms_prob)[0]
-    description = {'room' : defender, 'prev_owner' : rooms[defender]['owner'], 'new_owner' : attacker}
-    rooms[defender]['owner'] = attacker
+    survivors = { r['owner'] for r in state['rooms'].values() if r['owner'] is not None }
+    u, v = (*map(deque, zip(*((i, j) for i, j in zip(state['infected'], state['r0'][1]) if i in survivors))), deque(), deque())[: 2]
+    state['infected'] = u
+    state['r0'] = (state['r0'][0], v)
+    #state['infected'] = deque(x for x in state['infected'] if x in survivors)
+    # Healing
+    healing_factor = (len(state['infected']) / len(survivors)) ** 1.2
+    if random.random() < healing_factor:
+        healed_person = None
+        x = random.randrange(1, 2 ** len(state['infected']))
+        for i in range(len(state['infected'])):
+            if x == 1:
+                healed_person = state['infected'][-1 - i]
+                state['infected'].remove(healed_person)
+                state['r0'][1].remove(state['r0'][1][-1 - i])
+                break
+            x //= 2
+        assert(healed_person is not None)
+        state['immunity'][healed_person] = 30
+        description = { 'type' : 'heal', 'person' : healed_person }
+    # Infection
+    else:
+        potential_infected_people = [x for x in survivors if x not in state['infected'] and state['immunity'][x] == 0]
+        if len(potential_infected_people) and random.randrange(15) == 0:
+            infected_person = random.choice(potential_infected_people)
+            state['infected'].append(infected_person)
+            state['r0'][1].append(len(state['r0'][0]))
+            state['r0'][0].append(0)
+            description = { 'type' : 'infect', 'person' : infected_person }
+        # Conquer
+        else:
+            attacker = random.choice(list(r for r in rooms.values() if r['owner'] is not None and r['owner'] not in state['infected']))['owner']
+            def compute_prob(r):
+                sigma = one_meter * 0.6
+                infection_coeff = .5 if r['owner'] in state['infected'] else 1
+                return infection_coeff * sum(np.exp(-max(0, r['dist'][i] - one_meter) ** 2 / (2 * sigma ** 2)) for i, s in rooms.items() if s['owner'] == attacker)
+            rooms_idx, rooms_prob = zip(*((i, compute_prob(r)) for i, r in rooms.items() if r['owner'] != attacker))
+            rooms_prob /= sum(rooms_prob)
+            defender = np.random.choice(rooms_idx, size = 1, replace = True, p = rooms_prob)[0]
+            description = { 'type' : 'attack', 'room' : defender, 'prev_owner' : rooms[defender]['owner'], 'new_owner' : attacker }
+            if rooms[defender]['owner'] in state['infected']:
+                if state['immunity'][attacker] == 0:
+                    state['infected'].append(attacker)
+                    state['r0'][1].append(len(state['r0'][0]))
+                    state['r0'][0].append(0)
+                    i = state['infected'].index(rooms[defender]['owner'])
+                    state['r0'][0][state['r0'][1][i]] += 1
+                else:
+                    print(f"{rooms[attacker]['person']} has immunity level {state['immunity'][attacker]}")
+            rooms[defender]['owner'] = attacker
+    state['immunity'] = [max(i - 1, 0) for i in state['immunity']]
     state['iterations'] += 1
     state['random_state'] = random.getstate()
     state['np_random_state'] = np.random.get_state()
     return description
 
 def check_game_over(state):
-    survivors = {r['owner'] for r in state['rooms'].values()}
+    survivors = { r['owner'] for r in state['rooms'].values() if r['owner'] is not None }
     if len(survivors) == 1:
         return survivors.pop()
     else:

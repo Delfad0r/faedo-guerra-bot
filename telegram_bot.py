@@ -9,19 +9,19 @@ with open('token.txt') as fin:
 base_url = 'https://api.telegram.org/bot' + token 
 
 def telegram_request(func):
-    def decorator(*args, **kwargs):
-        success = False
-        while not success:
+    def decorated(*args, **kwargs):
+        while True:
             try:
                 response = requests.post(**func(*args, **kwargs), timeout = 15)
-                success = True
             except Exception as e:
                 print('Error: \'%s\' - Retrying' % str(e))
-        data = response.json()
-        if not data['ok']:
-            raise Exception(data['description'])
-        return data['result']
-    return decorator
+                continue
+            data = response.json()
+            if not data['ok']:
+                print('Error: \'%s\' - Retrying' % data['description'])
+                continue
+            return data['result']
+    return decorated
 
 @telegram_request
 def send_message(chat_id, text, **kwargs):

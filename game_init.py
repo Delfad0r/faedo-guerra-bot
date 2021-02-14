@@ -1,3 +1,4 @@
+from collections import deque
 import imageio
 import itertools
 import pickle
@@ -8,7 +9,7 @@ import sys
 import time
 import random
 
-from constants import *
+from FGBconstants import *
 
 first_iteration = time.mktime(time.strptime(sys.argv[1], '%d/%m/%y %H:%M'))
 
@@ -66,7 +67,14 @@ for i, r in rooms.items():
     else:
         r['owner'] = None
 
-state = {'rooms' : rooms, 'floors' : floors, 'iterations' : 0, 'next_iteration' : first_iteration}
+state = {
+    'rooms' : rooms,
+    'floors' : floors,
+    'infected' : deque(),
+    'immunity' : [0] * len(rooms),
+    'r0' : ([], deque()),
+    'iterations' : 0,
+    'next_iteration' : first_iteration}
 
 with open(save_file, 'wb') as fout:
     pickle.dump(state, fout)

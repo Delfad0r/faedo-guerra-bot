@@ -1,7 +1,7 @@
 one_meter = 40
 
-fake_description = {'room' : -1, 'prev_owner' : -1, 'new_owner' : -1}
-max_iterations = 1300
+fake_description = { 'type' : 'attack', 'room' : -1, 'prev_owner' : -1, 'new_owner' : -1 }
+max_iterations = 2000
 
 colors_file = 'data/colors.txt'
 rooms_file = 'data/rooms.txt'
