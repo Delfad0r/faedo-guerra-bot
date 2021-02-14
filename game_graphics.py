@@ -187,14 +187,13 @@ def draw_stats(width, height, state):
         large_font = ImageFont.truetype('Roboto-Bold.ttf', size = int(1.2 * one_meter))
         subscript_font = ImageFont.truetype('Roboto-Bold.ttf', size = int(.7 * one_meter))
         r0 = sum(state['r0'][0]) / len(state['r0'][0])
-        imagedraw.text((x - offset0, y + rectangle_h + offset0 + one_meter), f'R  = {r0:.2f}', fill = 'black', font = large_font)
+        imagedraw.text((x - offset0, y + rectangle_h + offset0 + one_meter), 'R  = %.2f' % r0, fill = 'black', font = large_font)
         imagedraw.text((x - offset0 + imagedraw.textsize('R', font = large_font)[0] , y + rectangle_h + offset0 + int(one_meter * 1.8)), '0', fill = 'black', font = subscript_font)
     return img
     
 def draw_full_image(state, description):
     if len(state['r0'][0]):
-        print(f"R0 list: {state['r0'][0]}")
-        print(f"R0: {sum(state['r0'][0]) / len(state['r0'][0])}")
+        print('R0 list:', state['r0'][0]})
     rooms = state['rooms']
     floors = state['floors']
     if description['type'] == 'attack':
