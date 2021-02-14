@@ -14,10 +14,9 @@ def one_iteration(state):
     u, v = (*map(deque, zip(*((i, j) for i, j in zip(state['infected'], state['r0'][1]) if i in survivors))), deque(), deque())[: 2]
     state['infected'] = u
     state['r0'] = (state['r0'][0], v)
-    #state['infected'] = deque(x for x in state['infected'] if x in survivors)
     # Healing
-    healing_factor = (len(state['infected']) / len(survivors)) ** 1.2
-    if random.random() < healing_factor:
+    healing_factor = .5 * (len(state['infected']) / len(survivors)) ** 1.5
+    if random.random() < healing_factor or len(state['infected']) == len(survivors):
         healed_person = None
         x = random.randrange(1, 2 ** len(state['infected']))
         for i in range(len(state['infected'])):
@@ -33,8 +32,12 @@ def one_iteration(state):
     # Infection
     else:
         potential_infected_people = [x for x in survivors if x not in state['infected'] and state['immunity'][x] == 0]
-        if len(potential_infected_people) and random.randrange(15) == 0:
+        if len(potential_infected_people) and random.randrange(15) == 0 and len(survivors) > 1:
             infected_person = random.choice(potential_infected_people)
+            if random.randrange(2) == 0 or len(state['infected']) == 0:
+                state['r0'][0].append(1) # external source
+            else:
+                state['r0'][0][0] += 1 # internal source
             state['infected'].append(infected_person)
             state['r0'][1].append(len(state['r0'][0]))
             state['r0'][0].append(0)
