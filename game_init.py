@@ -26,6 +26,12 @@ people = {}
 with open(people_file, 'r') as fin:
     for i, p in zip(itertools.count(1), fin.read().splitlines()):
         people[i] = p
+gender = {}
+with open(gender_file, 'r') as fin:
+    for i, g in zip(itertools.count(1), fin.read().splitlines()):
+        g = g.strip()
+        if g:
+            gender[i] = 'oa'['MF'.index(g)]
 
 with open(colors_file, 'r') as fin:
     colors = [np.array(tuple(map(int, c.split())) + (255, ), dtype = 'uint8') for c in fin]
@@ -63,7 +69,8 @@ for i, r in rooms.items():
         r['owner'] = i
         r['color'] = colors.pop()
         r['person'] = people[i]
-        print(i, people[i])
+        r['gender'] = gender[i]
+        print(i, people[i], gender[i])
     else:
         r['owner'] = None
 

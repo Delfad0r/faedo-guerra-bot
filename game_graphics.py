@@ -24,7 +24,10 @@ def get_corona_rectangle(w, h, color):
         img.paste(new_corona, (x - wn // 2, y - hn // 2), new_corona)
     return img
 
-huge_corona_rectangle = get_corona_rectangle(*imageio.imread('data/floor0-walls.png').shape[1 : : -1], 'white')
+#huge_corona_rectangle = get_corona_rectangle(*imageio.imread('data/floor0-walls.png').shape[1 : : -1], 'white')
+#imageio.imwrite('data/huge-corona-rectangle.png', huge_corona_rectangle)
+#print('I just saved you a hell lot of time')
+huge_corona_rectangle = Image.open('data/huge-corona-rectangle.png')
 
 def draw_outline_text(imagedraw, xy, t, fill, outline, thickness, **kwargs):
     x, y = xy
@@ -192,8 +195,8 @@ def draw_stats(width, height, state):
     return img
     
 def draw_full_image(state, description):
-    if len(state['r0'][0]):
-        print('R0 list:', state['r0'][0])
+    #if len(state['r0'][0]):
+        #print('R0 list:', state['r0'][0])
     rooms = state['rooms']
     floors = state['floors']
     if description['type'] == 'attack':

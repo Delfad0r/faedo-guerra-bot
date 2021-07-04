@@ -24,7 +24,7 @@ def send_all_floors(state):
         img = game_graphics.draw_floor(i, state, fake_description, True)
         img.save('img%s.png' % i, 'PNG')
     while telegram_bot.send_photo_group(channel_name, [open('img%s.png' % i, 'rb') for i in sorted(state['floors'].keys(), key = lambda i: state['floors'][i]['altitude'])]) is None:
-        time.slee(1)
+        time.sleep(1)
     for i in state['floors']:
         os.remove('img%s.png' % i)
         
@@ -49,7 +49,8 @@ def end_func(state, survivor):
     while telegram_bot.send_message(channel_name, 'La Grande Guerra del Faedo è terminata') is None:
         time.sleep(1)
     send_all_floors(state)
-    while telegram_bot.send_message(channel_name, '%s è Campione del Faedo!' % state['rooms'][survivor]['person']) is None:
+    s = '%s è Campione%s del Faedo!' % (state['rooms'][survivor]['person'], ['', 'ssa'][state['rooms'][survivor]['gender']])
+    while telegram_bot.send_message(channel_name, s) is None:
         time.sleep(1)
 
 def save_func(state):
@@ -91,9 +92,10 @@ while 'random_state' not in state0:
                 if r['owner']:
                     leaders[r['owner']] += 1
             leaders = sorted(leaders.items(), key = lambda x: x[1], reverse = True)[: 2]
-            if len(leaders) == 2 and leaders[1][1] >= 50 and leaders[0][1] - leaders[1][1] <= 10 and (leaders[0][0] + leaders[1][0]) % 2 == 1:
+            if len(leaders) == 2 and leaders[1][1] >= 70 and leaders[0][1] - leaders[1][1] <= 20 and (leaders[0][0] + leaders[1][0]) % 2 == 1:
                 epic_battle = True
     game_engine.main_loop(state, 0, do_nothing, do_nothing, do_nothing, do_nothing, test_epic_battle)
+    if True:
     if state['iterations'] <= max_iterations and epic_battle:
     #if state['iterations'] <= max_iterations:
         print('La Grande Guerra del Faedo durerà %d turni' % state['iterations'])
@@ -102,5 +104,5 @@ while 'random_state' not in state0:
     del state0['random_state']
     del state0['np_random_state']
 
-#game_engine.main_loop(state0, 30 * 60, begin_func, end_func, save_func, prep_func, main_func)
-game_engine.main_loop(state0, 0 * 60, begin_func, end_func, save_func, prep_func, main_func)
+game_engine.main_loop(state0, 15 * 60, begin_func, end_func, save_func, prep_func, main_func)
+#game_engine.main_loop(state0, 0 * 60, begin_func, end_func, save_func, prep_func, main_func)

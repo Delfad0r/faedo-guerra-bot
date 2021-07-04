@@ -1,0 +1,3 @@
+{n} ha conquistato {r}
+{r} passa sotto il controllo di {n}
+Su {r} sventola ora la bandiera di {n}

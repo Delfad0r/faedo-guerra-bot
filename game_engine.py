@@ -27,14 +27,14 @@ def one_iteration(state):
                 break
             x //= 2
         assert(healed_person is not None)
-        state['immunity'][healed_person] = 30
+        state['immunity'][healed_person] = random.randrange(30, 50)
         description = { 'type' : 'heal', 'person' : healed_person }
     # Infection
     else:
         potential_infected_people = [x for x in survivors if x not in state['infected'] and state['immunity'][x] == 0]
         if len(potential_infected_people) and random.randrange(15) == 0 and len(survivors) > 1:
             infected_person = random.choice(potential_infected_people)
-            if random.randrange(2) == 0 or len(state['infected']) == 0:
+            if random.randrange(3) == 0 or len(state['infected']) == 0:
                 state['r0'][0].append(1) # external source
             else:
                 state['r0'][0][0] += 1 # internal source

@@ -1,30 +1,59 @@
 import itertools
+import random
 import re
 
+with open('sentences/heal.txt', 'r') as fin:
+    sentences_heal = [l.strip() for l in fin if l]
+
+with open('sentences/infect.txt', 'r') as fin:
+    sentences_infect = [l.strip() for l in fin if l]
+
+with open('sentences/conquer.txt', 'r') as fin:
+    sentences_conquer = [l.strip() for l in fin if l]
+
+with open('sentences/conquer_infect.txt', 'r') as fin:
+    sentences_conquer_infect = [l.strip() for l in fin if l]
+
+with open('sentences/conquer_eradicate.txt', 'r') as fin:
+    sentences_conquer_eradicate = [l.strip() for l in fin if l]
+    
+with open('sentences/conquer_immune.txt', 'r') as fin:
+    sentences_conquer_immune = [l.strip() for l in fin if l]
+    
+with open('sentences/conquer_no_defender.txt', 'r') as fin:
+    sentences_conquer_no_defender = [l.strip() for l in fin if l]
+
 def generate_report(state, description):
+    random.seed(state['iterations'])
     rooms = state['rooms']
     if description['type'] == 'attack':
         room = description['room']
         new_owner = description['new_owner']
         prev_owner = description['prev_owner']
         if prev_owner is not None:
-            if any(r['owner'] == prev_owner for r in rooms.values()):
-                s = '[{0}] ha sottratto {1} a [{2}]'
-                if prev_owner in state['infected']:
-                    s += ', incurante della carica virale'
+            if prev_owner in state['infected']:
+                if new_owner in state['infected']:
+                    s = random.choice(sentences_conquer_infect)
+                else:
+                    s = random.choice(sentences_conquer_immune)
             else:
-                s = '[{0}] ha conquistato {1}, cancellando [{2}] dalla faccia del Faedo\nAnd [{0}] is a test'
-                if prev_owner in state['infected']:
-                    s = '[{0}] ha sacrificato la sua salute per conquistare {1} e cancellare [{2}] dalla faccia del Faedo'
+                s = random.choice(sentences_conquer)
+            if all(r['owner'] != prev_owner for r in rooms.values()):
+                s += '\n' + random.choice(sentences_conquer_eradicate)
+            return s.format(na = '[%d]' % new_owner, ga = rooms[new_owner]['gender'], nd = '[%d]' % prev_owner, gd = rooms[prev_owner]['gender'], r = rooms[room]['name'])
         else:
-            s =  '[%d] ha conquistato %s' % (new_owner, rooms[room]['name'])
-        return s.format(new_owner, rooms[room]['name'], prev_owner)
+            s =  random.choice(sentences_conquer_no_defender)
+            return s.format(n = '[%d]' % new_owner, g = rooms[new_owner]['gender'], r = rooms[room]['name'])
     elif description['type'] == 'heal':
         person = description['person']
-        return '[%d] è guarit* ed è più agguerrit* che mai' % person
+        s = random.choice(sentences_heal)
+        return s.format(n = '[%d]' % person, g = rooms[person]['gender'])
     elif description['type'] == 'infect':
         person = description['person']
-        return '[%d] accusa sintomi influenzali' % person
+        s = random.choice(sentences_infect)
+        return s.format(n = '[%d]' % person, g = rooms[person]['gender'])
+    else:
+        assert False, 'action %s unknown' % description['type']
 
 def pretty_report(state, description):
     report = generate_report(state, description)

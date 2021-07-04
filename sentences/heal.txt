@@ -1,0 +1,5 @@
+{n} ha ricevuto l'esito negativo del tampone
+{n} è guarit{g}, ed è più caric{g} che mai
+{n} può finalmente uscire dall'isolamento e rivedere la luce del sole
+{n} sembra essersi ripres{g}
+{n} è tornat{g}, più agguerrit{g} di prima
