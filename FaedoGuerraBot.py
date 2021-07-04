@@ -7,12 +7,13 @@ import shutil
 import subprocess
 import os
 import random
+import sys
 
 from FGBconstants import *
 import game_engine, game_graphics, telegram_bot, report
 
 
-channel_name = '@FaedoGuerraBotTestChannel'
+channel_name = '@FaedoGuerraBotChannel'
 
 def upload_image_ssh(src, dest):
     global username, password
@@ -29,7 +30,7 @@ def send_all_floors(state):
         os.remove('img%s.png' % i)
         
 def begin_func(state):
-    while telegram_bot.send_message(channel_name, 'Sta per cominciare la Grande Guerra del Faedo: tenetevi pronti!') is None:
+    while telegram_bot.send_message(channel_name, 'Sta per cominciare la Seconda Guerra del Faedo: tenetevi pronti!') is None:
         time.sleep(1)
     while telegram_bot.send_message(channel_name, 'Ecco l\'elenco dei prodi combattenti') is None:
         time.sleep(1)
@@ -46,7 +47,7 @@ def begin_func(state):
         % (time.strftime('%d/%m/%y', b_time), time.strftime('%H:%M', b_time)))
 
 def end_func(state, survivor):
-    while telegram_bot.send_message(channel_name, 'La Grande Guerra del Faedo è terminata') is None:
+    while telegram_bot.send_message(channel_name, 'La Seconda Guerra del Faedo è terminata') is None:
         time.sleep(1)
     send_all_floors(state)
     s = '%s è Campione%s del Faedo!' % (state['rooms'][survivor]['person'], ['', 'ssa'][state['rooms'][survivor]['gender']])
