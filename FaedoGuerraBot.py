@@ -95,7 +95,6 @@ while 'random_state' not in state0:
             if len(leaders) == 2 and leaders[1][1] >= 70 and leaders[0][1] - leaders[1][1] <= 20 and (leaders[0][0] + leaders[1][0]) % 2 == 1:
                 epic_battle = True
     game_engine.main_loop(state, 0, do_nothing, do_nothing, do_nothing, do_nothing, test_epic_battle)
-    if True:
     if state['iterations'] <= max_iterations and epic_battle:
     #if state['iterations'] <= max_iterations:
         print('La Grande Guerra del Faedo durerà %d turni' % state['iterations'])
