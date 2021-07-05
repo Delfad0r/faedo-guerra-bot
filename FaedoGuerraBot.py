@@ -17,8 +17,12 @@ channel_name = '@FaedoGuerraBotChannel'
 
 def upload_image_ssh(src, dest):
     global username, password
+    tries = 0
     while subprocess.run(['sshpass', '-p', password, 'scp', '-oStrictHostKeyChecking=no', '-oUserKnownHostsFile=/dev/null', src, '%s@ssh.uz.sns.it:~/nobackup/public_html/%s' % (username, dest)]).returncode != 0:
         time.sleep(1)
+        tries += 1
+        if tries > 10:
+            return
 
 def send_all_floors(state):
     for i in state['floors']:
@@ -38,7 +42,7 @@ def begin_func(state):
     img.save('ProdiCombattenti.png', 'PNG')
     while telegram_bot.send_document(channel_name, open('ProdiCombattenti.png', 'rb')) is None:
         time.sleep(1)
-    #upload_image_ssh('ProdiCombattenti.png', online_img_file)
+    upload_image_ssh('ProdiCombattenti.png', online_img_file)
     os.remove('ProdiCombattenti.png')
     send_all_floors(state)
     b_time = time.localtime(state['next_iteration'])
@@ -66,14 +70,14 @@ def main_func(state, description):
     rep = report.pretty_report(state, description)
     while telegram_bot.send_photo(channel_name, open('img.png', 'rb'), caption = rep) is None:
         time.sleep(1)
-    #upload_image_ssh('img.png', online_img_file)
+    upload_image_ssh('img.png', online_img_file)
     os.remove('img.png')
     print('Turno %d' % state['iterations'])
     print(rep)
 
-#print('Username UZ: ', end = '')
-#username = input()
-#password = getpass.getpass()
+print('Username UZ: ', end = '')
+username = input()
+password = getpass.getpass()
 
 state0 = pickle.load(open(save_file, 'rb'))
 while 'random_state' not in state0:
