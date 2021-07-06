@@ -231,6 +231,8 @@ def draw_full_image(state, description):
         small_floor_img = draw_floor(f, state, description, False)
         small_floor_img = small_floor_img.resize((small_w, small_h), Image.BICUBIC)
         img.paste(small_floor_img, (large_w + (i % 2) * small_w, report_h + (i // 2) * small_h))
+    flag = Image.open('italian-flag.png')
+    img.paste(flag, (2856, 165), flag)
     return img
 
 def draw_players_list(state):
