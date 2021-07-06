@@ -66,11 +66,15 @@ def prep_func(state, description):
     img = game_graphics.draw_full_image(state, description)
     img.save('img.png', 'PNG')
 
+def premain_func(state, description):
+    upload_image_ssh('img.png', online_img_file)
+    print('Uploaded to ssh')
+
 def main_func(state, description):
     rep = report.pretty_report(state, description)
     while telegram_bot.send_photo(channel_name, open('img.png', 'rb'), caption = rep) is None:
         time.sleep(1)
-    upload_image_ssh('img.png', online_img_file)
+    #upload_image_ssh('img.png', online_img_file)
     os.remove('img.png')
     print('Turno %d' % state['iterations'])
     print(rep)
@@ -99,7 +103,7 @@ while 'random_state' not in state0:
             leaders = sorted(leaders.items(), key = lambda x: x[1], reverse = True)[: 2]
             if len(leaders) == 2 and leaders[1][1] >= 70 and leaders[0][1] - leaders[1][1] <= 20 and (leaders[0][0] + leaders[1][0]) % 2 == 1:
                 epic_battle = True
-    game_engine.main_loop(state, 0, do_nothing, do_nothing, do_nothing, do_nothing, test_epic_battle)
+    game_engine.main_loop(state, 0, do_nothing, do_nothing, do_nothing, do_nothing, do_nothing, test_epic_battle)
     if state['iterations'] <= max_iterations and epic_battle:
     #if state['iterations'] <= max_iterations:
         print('La Grande Guerra del Faedo durerà %d turni' % state['iterations'])
@@ -108,5 +112,5 @@ while 'random_state' not in state0:
     del state0['random_state']
     del state0['np_random_state']
 
-game_engine.main_loop(state0, 15 * 60, begin_func, end_func, save_func, prep_func, main_func)
+game_engine.main_loop(state0, 15 * 60, begin_func, end_func, save_func, prep_func, premain_func, main_func)
 #game_engine.main_loop(state0, 0 * 60, begin_func, end_func, save_func, prep_func, main_func)
