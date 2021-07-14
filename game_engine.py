@@ -96,7 +96,8 @@ def main_loop(state, wait_time, begin_func, end_func, save_func, prep_func, prem
         else:
             state['next_iteration'] = state['next_iteration'] + wait_time
             main_func(state, state['description'])
-            del state['has_premain']
+            if 'has_premain' in state:
+                del state['has_premain']
             state['ready_for_main'] = False
             save_func(state)
             survivor = check_game_over(state)
