@@ -21,7 +21,7 @@ def upload_image_ssh(src, dest):
     while subprocess.run(['sshpass', '-p', password, 'scp', '-oStrictHostKeyChecking=no', '-oUserKnownHostsFile=/dev/null', src, '%s@ssh.uz.sns.it:~/nobackup/public_html/%s' % (username, dest)]).returncode != 0:
         time.sleep(1)
         tries += 1
-        if tries > 10:
+        if tries > 0:
             return
 
 def send_all_floors(state):
